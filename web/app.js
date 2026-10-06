@@ -15,7 +15,7 @@
 
 import { PARAMS, GUIDE } from "./settings.js";
 import { CameraSense, SimSense } from "./sense.js";
-import { Motion } from "./motion.js";
+import { Quality } from "./quality.js";
 import { Turn } from "./turn.js";
 import { Art } from "./art.js";
 import { Alien } from "./alien.js";
@@ -189,7 +189,7 @@ document.addEventListener("visibilitychange", () => document.visibilityState ===
 
 /* ---------- 한 프레임 ---------- */
 
-const motion = new Motion();
+const quality = new Quality();
 const turn = new Turn();
 const alien = new Alien(art);
 const scene = new Scene(art);
@@ -223,13 +223,13 @@ new p5((sk) => {
 
     if (sense) {
       const frame = sense.read(now);
-      m = motion.read(frame, dt);
-      state = turn.step(dt, frame, m, p);
+      m = quality.read(frame, dt, now);
+      state = turn.step(dt, frame, m, p, () => quality.summary());
       if (state.added) {
         // 화면을 거울처럼 뒤집어 보여 주면 그림도 관객이 움직인 쪽에 피어나야 한다
         const at = p.mirror ? { x: 1 - state.at.x, y: state.at.y } : state.at;
-        scene.add(state.added, at, now);
-        if (p.sound) sound.add(turn.turn - 1);
+        scene.add(state.added, at, now, state.quality);
+        if (p.sound) sound.add(turn.turn - 1, state.quality);
       }
       if (state.phase === "idle" && scene.things.length && turn.t < dt * 2) {
         scene.clear();
@@ -244,17 +244,39 @@ new p5((sk) => {
     scene.draw(sk, p, now);
     alien.draw(sk, state, p, dt);
     if (p.guide) drawGuide(sk);
+    if (p.reading) drawReading(sk);
 
     if (!document.body.classList.contains("display")) {
+      const q = state.quality;
       meter("amount", m.amount, m.amount.toFixed(2));
       meter("answer", state.answering / Math.max(0.1, p.answerHold), state.answering.toFixed(1));
-      meter("spread", m.spread, m.spread.toFixed(2));
+      meter("tempo", q ? q.tempo : 0, q ? q.tempo.toFixed(2) : "-");
+      meter("size", q ? q.size : 0, q ? q.size.toFixed(2) : "-");
+      meter("sharp", q ? q.sharp : 0, q ? q.sharp.toFixed(2) : "-");
       meter("turn", state.progress, `${state.turn}`);
+      $("reading").textContent = q ? `이렇게 읽었습니다: ${Quality.words(q).join(", ")}` : "아직 답을 받지 않았습니다";
+      $("phrasenote").textContent = state.motif
+        ? `지금 문장: ${state.phrase.words()}`
+        : `다음 문장: ${state.phrase.words()}`;
       $("phase").textContent = { idle: "기다림", greet: "인사", call: "외계인이 말하는 중",
         wait: "관객의 차례", reply: "답을 받음", full: "세계가 가득" }[state.phase] || state.phase;
       $("fps").textContent = `${Math.round(sk.frameRate())} fps`;
     }
   };
+
+  /* 읽은 것. 답을 받은 직후에만 짧게 띄운다. 당신의 춤을 이렇게 들었다는 말이다 */
+  function drawReading(sk) {
+    if (state.phase !== "reply" || !state.quality) return;
+    const fade = Math.min(1, state.t / 0.2) * Math.min(1, (0.8 - state.t) / 0.3);
+    if (fade <= 0) return;
+    sk.push();
+    sk.noStroke();
+    sk.fill(214, 236, 255, 200 * fade);
+    sk.textAlign(sk.CENTER, sk.CENTER);
+    sk.textSize(Math.max(12, sk.height * 0.026));
+    sk.text(Quality.words(state.quality).join("  "), sk.width / 2, sk.height * 0.14);
+    sk.pop();
+  }
 
   /* 안내 글. 전시에서 지킴이 없이도 참여할 수 있게 한 줄만 띄운다 */
   function drawGuide(sk) {
@@ -326,4 +348,4 @@ if (offline > 0) {
   }, 2000);
 }
 
-window.dancereply = { p, turn, scene, sound, art, get motion() { return m; }, get state() { return state; } };
+window.dancereply = { p, turn, scene, sound, art, quality, get motion() { return m; }, get state() { return state; } };

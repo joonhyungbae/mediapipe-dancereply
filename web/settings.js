@@ -17,6 +17,8 @@ export const PARAMS = [
   { key: "callSeconds", label: "외계인이 추는 시간(초)", min: 1, max: 8, step: 0.2, value: 2.6 },
   // 답을 기다리는 시간. 이만큼 지나도 답이 없으면 외계인이 다시 말을 건다
   { key: "waitSeconds", label: "기다리는 시간(초)", min: 2, max: 20, step: 0.5, value: 7 },
+  // 외계인이 관객의 춤을 얼마나 물려받나. 0 이면 혼자 추고, 1 이면 거의 흉내 낸다
+  { key: "echo", label: "따라 하는 정도", min: 0, max: 1, step: 0.05, value: 0.6 },
   // 한 번 답할 때마다 그림이 몇 장 나타나나
   { key: "perAnswer", label: "답 한 번에 그림 수", min: 1, max: 4, step: 1, value: 1 },
   // 그림이 나타날 때 커지는 시간
@@ -29,12 +31,15 @@ export const PARAMS = [
   { key: "resetSeconds", label: "처음으로 돌아가는 시간(초)", min: 3, max: 60, step: 1, value: 12 },
   { key: "mirror", label: "좌우 뒤집기", type: "check", value: true },
   { key: "guide", label: "안내 글", type: "check", value: true },
+  // 관객의 춤을 어떻게 읽었는지 화면에 한 줄로 보여 준다
+  { key: "reading", label: "읽은 것 보이기", type: "check", value: true },
 ];
 
 // ─── 감지 ────────────────────────────────────────────────────────────────
 export const INPUT_WIDTH = 320;    // 사람을 찾는 그림의 가로. 느린 기계에서는 주소에 ?in=256
 export const MAX_PEOPLE = 1;       // 한 번에 한 사람이다
 export const MOTION_SMOOTH = 0.25; // 움직임 숫자가 튀지 않게 섞는 정도
+export const QUALITY_WINDOW = 3.0; // 춤의 성격을 읽는 창의 길이(초). 길면 느긋하게, 짧으면 민감하게 읽는다
 export const GONE_SECONDS = 2.0;   // 사람이 이만큼 안 보이면 없는 것으로 본다
 
 // ─── 대화 (turn.js) ──────────────────────────────────────────────────────

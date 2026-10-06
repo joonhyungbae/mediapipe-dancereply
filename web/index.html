@@ -34,17 +34,21 @@
     </div>
 
     <div class="card">
-      <h2>감지한 것</h2>
+      <h2>읽은 춤 (여섯 가지는 web/quality.js)</h2>
       <canvas id="preview" width="256" height="192"></canvas>
       <div class="meter"><span>움직임</span><i><b id="m-amount"></b></i><output id="v-amount"></output></div>
       <div class="meter"><span>답하는 중</span><i><b id="m-answer"></b></i><output id="v-answer"></output></div>
-      <div class="meter"><span>두 손 벌림</span><i><b id="m-spread"></b></i><output id="v-spread"></output></div>
+      <div class="meter"><span>빠르기</span><i><b id="m-tempo"></b></i><output id="v-tempo"></output></div>
+      <div class="meter"><span>크기</span><i><b id="m-size"></b></i><output id="v-size"></output></div>
+      <div class="meter"><span>결(날카로움)</span><i><b id="m-sharp"></b></i><output id="v-sharp"></output></div>
+      <div class="hint" id="reading">아직 답을 받지 않았습니다</div>
     </div>
 
     <div class="card">
       <h2>대화 (규칙은 web/turn.js)</h2>
       <div id="phase">기다림</div>
       <div class="meter out"><span>주고받음</span><i><b id="m-turn"></b></i><output id="v-turn"></output></div>
+      <div class="hint" id="phrasenote">문장을 짓는 중</div>
       <div class="hint" id="artnote">자료를 읽는 중</div>
     </div>
 

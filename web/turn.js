@@ -16,20 +16,27 @@
    turn     몇 번째 주고받음인가
    added    이번 프레임에 더해진 그림 수 (0 이면 없음)
    at       그 그림이 피어날 자리 {x, y}
+   quality  마지막으로 읽은 관객의 춤의 성격 (quality.js)
+   motif    외계인이 지금 추고 있는 몸짓 (phrase.js)
 
  바꿔 볼 것
    답으로 받아들이는 조건. 지금은 움직임의 양만 본다. 두 손을 벌렸을 때만 받아 주거나,
    외계인이 춘 방향과 같은 쪽으로 움직였을 때만 받아 주는 식으로 바꿀 수 있다
+   답을 읽는 자리. read() 가 quality.js 의 여섯 가지를 돌려주고, 그것을 다음 문장이 물려받는다
    기다리는 시간. 길면 관객이 생각할 틈이 생기고, 짧으면 외계인이 자꾸 말을 건다
    주고받는 횟수. MAX_TURNS 에 닿으면 한 세계가 다 찬 것으로 본다
 */
 
 import { MAX_TURNS, GREET_SECONDS, GONE_SECONDS } from "./settings.js";
+import { Phrase } from "./phrase.js";
 
-const NEXT = { idle: "greet", greet: "call", call: "wait", wait: "call", reply: "call" };
+// 아직 아무도 답하지 않았을 때 외계인이 쓰는 성격. 보통 빠르기, 보통 크기다
+const DEFAULT_Q = { amount: 0.4, tempo: 0.4, size: 0.45, sharp: 0.4, vertical: 0.5, symmetry: 0.8, open: 0.4 };
 
 export class Turn {
   constructor() {
+    this.phrase = new Phrase();
+    this.quality = null;     // 마지막으로 읽은 관객의 춤
     this.phase = "idle";
     this.t = 0;          // 지금 단계에 들어온 뒤 흐른 시간
     this.turn = 0;       // 몇 번 주고받았나
@@ -44,8 +51,13 @@ export class Turn {
     this.t = 0;
   }
 
-  /* dt 는 지난 시간(초), m 은 motion.js 가 준 숫자, p 는 조절판 */
-  step(dt, frame, m, p) {
+  /* 말을 걸기 전에 문장을 짓는다. 관객의 답을 물려받는 자리다 */
+  compose(p) {
+    this.phrase.make(this.quality || DEFAULT_Q, this.turn, p);
+  }
+
+  /* dt 는 지난 시간(초), m 은 quality.js 가 준 프레임 숫자, read 는 한 번의 답을 읽는 함수 */
+  step(dt, frame, m, p, read) {
     this.t += dt;
     this.added = 0;
     this.gone = frame.present ? 0 : this.gone + dt;
@@ -64,11 +76,14 @@ export class Turn {
         if (here && this.t > GREET_SECONDS) this.go("greet");
         break;
       case "greet":
-        if (this.t > 1.2) this.go("call");
+        if (this.t > 1.2) {
+          this.compose(p);
+          this.go("call");
+        }
         break;
       case "call":
-        // 주고받을수록 외계인의 말이 조금씩 길어진다
-        if (this.t > p.callSeconds * (1 + this.turn * 0.12)) this.go("wait");
+        // 문장을 다 추면 관객의 차례다. 문장의 길이는 phrase.js 가 정한다
+        if (this.t > this.phrase.total) this.go("wait");
         break;
       case "wait":
         // 답. 움직임이 문턱을 넘은 채로 잠시 이어져야 한 번으로 센다
@@ -78,13 +93,18 @@ export class Turn {
           this.turn += 1;
           this.added = p.perAnswer;
           this.at = { x: m.x, y: m.y };
+          this.quality = read();          // 방금의 춤을 읽는다. 다음 문장이 이것을 물려받는다
           this.go(this.turn >= MAX_TURNS ? "full" : "reply");
         } else if (this.t > p.waitSeconds) {
-          this.go("call");   // 답이 없으면 다시 말을 건다
+          this.compose(p);   // 답이 없으면 다시 말을 건다
+          this.go("call");
         }
         break;
       case "reply":
-        if (this.t > 0.8) this.go("call");
+        if (this.t > 0.8) {
+          this.compose(p);
+          this.go("call");
+        }
         break;
       case "full":
         if (this.t > 12) {
@@ -97,10 +117,14 @@ export class Turn {
   }
 
   out(here) {
+    const calling = this.phase === "call" || this.phase === "greet";
     return {
       phase: this.phase, turn: this.turn, added: this.added, at: this.at,
       here, progress: Math.min(1, this.turn / MAX_TURNS),
-      answering: this.answering,
+      answering: this.answering, t: this.t,
+      quality: this.quality,
+      motif: calling ? this.phrase.at(this.t) : null,
+      phrase: this.phrase,
     };
   }
 }
