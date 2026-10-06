@@ -46,7 +46,7 @@ export class Scene {
   spot(at, q) {
     // 큰 그림일수록 가장자리에서 멀리 둔다. 화면 밖으로 잘리지 않게 한다
     const edge = 0.12 + (q ? q.size : 0.4) * 0.1;
-    const taken = [...this.things, { x: 0.5, y: 0.52 }];   // 마지막은 외계인이 선 자리
+    const taken = [...this.things, { x: 0.5, y: 0.4 }];    // 마지막은 외계인이 선 자리
     let best = null, bestGap = -1;
     for (let i = 0; i < 12; i++) {
       // 처음에는 움직인 자리 가까이에서, 뒤로 갈수록 멀리까지 넓혀 본다

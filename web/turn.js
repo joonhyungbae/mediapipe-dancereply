@@ -7,7 +7,7 @@
    기다림   아무도 없다. 외계인은 가만히 서서 바라본다
    인사     사람이 오면 짧게 인사한다
    말걸기   외계인이 춤춘다. 주고받을수록 조금씩 길어진다
-   듣기     관객의 차례. 답을 기다린다
+   듣기     관객의 차례. 한 박자 쉬고 나서 답을 기다린다
    답       관객이 움직였다. 그림 한 장과 소리 한 겹이 더해진다
    가득     여러 번 주고받아 한 세계가 다 찼다
 
@@ -27,7 +27,7 @@
    주고받는 횟수. MAX_TURNS 에 닿으면 한 세계가 다 찬 것으로 본다
 */
 
-import { MAX_TURNS, GREET_SECONDS, GONE_SECONDS } from "./settings.js";
+import { MAX_TURNS, GREET_SECONDS, GONE_SECONDS, BREATH_SECONDS } from "./settings.js";
 import { Phrase } from "./phrase.js";
 
 // 아직 아무도 답하지 않았을 때 외계인이 쓰는 성격. 보통 빠르기, 보통 크기다
@@ -86,6 +86,8 @@ export class Turn {
         if (this.t > this.phrase.total) this.go("wait");
         break;
       case "wait":
+        // 말이 끝나자마자 답으로 세지 않는다. 차례가 넘어온 것을 볼 틈을 준다
+        if (this.t < BREATH_SECONDS) break;
         // 답. 움직임이 문턱을 넘은 채로 잠시 이어져야 한 번으로 센다
         this.answering = m.amount > p.answerAt ? this.answering + dt : Math.max(0, this.answering - dt * 2);
         if (this.answering > p.answerHold) {

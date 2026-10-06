@@ -55,9 +55,9 @@ export class Alien {
   draw(sk, state, p, dt) {
     this.step(state, dt);
     const W = sk.width, H = sk.height;
-    const unit = Math.min(W, H) * 0.14 * (1 + state.progress * 0.25);
+    const unit = Math.min(W, H) * 0.125 * (1 + state.progress * 0.25);
     const cx = W * 0.5 + this.lean * unit * 1.1;
-    const cy = H * 0.52 - this.hop * unit * 0.9;
+    const cy = H * 0.4 - this.hop * unit * 0.9;
     // 돌 때는 몸이 좁아 보인다. 한 바퀴 도는 것을 옆으로 눌러서 흉내 낸다
     const turn = Math.abs(Math.cos(this.spin));
     const facing = Math.cos(this.spin) < 0 ? -1 : 1;
@@ -65,7 +65,7 @@ export class Alien {
     sk.push();
     sk.noStroke();
     sk.fill(0, 0, 0, 60);
-    sk.ellipse(cx, H * 0.52 + unit * 1.25, unit * 1.3 * (0.6 + turn * 0.4), unit * 0.22);
+    sk.ellipse(cx, H * 0.4 + unit * 1.25, unit * 1.3 * (0.6 + turn * 0.4), unit * 0.22);
 
     const img = this.art?.alien(this.phase * 0.6);
     if (img) {

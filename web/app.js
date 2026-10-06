@@ -20,6 +20,7 @@ import { Turn } from "./turn.js";
 import { Art } from "./art.js";
 import { Alien } from "./alien.js";
 import { Scene } from "./scene.js";
+import { Live } from "./live.js";
 import { Sound } from "./sound.js";
 
 const $ = (id) => document.getElementById(id);
@@ -164,6 +165,7 @@ function restart() {
   turn.go("idle");
   scene.clear();
   sound.clear();
+  live.clear();
 }
 addEventListener("keydown", (e) => {
   if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
@@ -193,6 +195,7 @@ const quality = new Quality();
 const turn = new Turn();
 const alien = new Alien(art);
 const scene = new Scene(art);
+const live = new Live();
 const prev = $("preview");
 const pctx = prev.getContext("2d");
 let state = { phase: "idle", turn: 0, progress: 0, added: 0, at: { x: 0.5, y: 0.5 }, answering: 0 };
@@ -234,15 +237,19 @@ new p5((sk) => {
       if (state.phase === "idle" && scene.things.length && turn.t < dt * 2) {
         scene.clear();
         sound.clear();
+        live.clear();
       }
+      live.step(m, state, now);
       drawPreview(frame);
     }
 
     // 바탕. 주고받을수록 조금씩 밝아진다. 세계가 차오르는 느낌을 바탕에서도 준다
     const warm = state.progress;
     sk.background(10 + warm * 18, 13 + warm * 20, 20 + warm * 26);
+    live.ghost(sk, sense ? sense.frame : {}, p);
     scene.draw(sk, p, now);
     alien.draw(sk, state, p, dt);
+    live.draw(sk, m, state, p, now);
     if (p.guide) drawGuide(sk);
     if (p.reading) drawReading(sk);
 
@@ -348,4 +355,4 @@ if (offline > 0) {
   }, 2000);
 }
 
-window.dancereply = { p, turn, scene, sound, art, quality, get motion() { return m; }, get state() { return state; } };
+window.dancereply = { p, turn, scene, sound, art, quality, live, get motion() { return m; }, get state() { return state; } };

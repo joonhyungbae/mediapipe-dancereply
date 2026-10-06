@@ -11,8 +11,9 @@
 export const PARAMS = [
   // 이만큼 움직이면 「답했다」고 본다. 작으면 조금만 움직여도 받아 주고, 크면 크게 춰야 한다
   { key: "answerAt", label: "답으로 보는 움직임", min: 0.02, max: 0.6, step: 0.01, value: 0.12 },
-  // 답을 이만큼 이어서 해야 한 번으로 센다. 지나가는 사람이 답한 것으로 보지 않게 한다
-  { key: "answerHold", label: "답이 이어져야 하는 시간(초)", min: 0.2, max: 3, step: 0.1, value: 0.8 },
+  // 답을 이만큼 이어서 해야 한 번으로 센다. 짧으면 지나가기만 해도 답이 되고,
+  // 길면 테두리가 차오르는 것을 보며 「조금만 더」 하게 된다
+  { key: "answerHold", label: "답이 이어져야 하는 시간(초)", min: 0.3, max: 4, step: 0.1, value: 1.6 },
   // 외계인이 한 번 추는 시간
   { key: "callSeconds", label: "외계인이 추는 시간(초)", min: 1, max: 8, step: 0.2, value: 2.6 },
   // 답을 기다리는 시간. 이만큼 지나도 답이 없으면 외계인이 다시 말을 건다
@@ -31,6 +32,9 @@ export const PARAMS = [
   { key: "resetSeconds", label: "처음으로 돌아가는 시간(초)", min: 3, max: 60, step: 1, value: 12 },
   { key: "mirror", label: "좌우 뒤집기", type: "check", value: true },
   { key: "guide", label: "안내 글", type: "check", value: true },
+  // 관객이 움직이는 동안 바로 보이는 것들. 전시에서 빼고 싶으면 끈다
+  { key: "marks", label: "움직임 자국", type: "check", value: true },
+  { key: "ghost", label: "내 그림자", type: "check", value: true },
   // 관객의 춤을 어떻게 읽었는지 화면에 한 줄로 보여 준다
   { key: "reading", label: "읽은 것 보이기", type: "check", value: true },
 ];
@@ -45,13 +49,15 @@ export const GONE_SECONDS = 2.0;   // 사람이 이만큼 안 보이면 없는 �
 // ─── 대화 (turn.js) ──────────────────────────────────────────────────────
 export const MAX_TURNS = 12;       // 이만큼 주고받으면 한 세계가 다 찬 것으로 본다
 export const GREET_SECONDS = 2.0;  // 사람이 오면 이만큼 뒤에 외계인이 인사한다
+export const BREATH_SECONDS = 0.6; // 외계인이 말을 마친 뒤 이만큼은 답을 받지 않는다.
+                                   // 차례가 넘어온 것을 눈으로 볼 틈을 준다
 
 // ─── 안내 글 (app.js) ────────────────────────────────────────────────────
 export const GUIDE = {
   idle: "낯선 존재에게 춤으로 말을 걸어 보세요",
   greet: "",
   call: "외계인이 말하고 있습니다",
-  wait: "이제 당신 차례입니다",
+  wait: "이제 당신 차례입니다. 움직이면 테두리가 찹니다",
   reply: "",
   full: "하나의 세계가 만들어졌습니다",
 };
